@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+		http://www.springframework.org/schema/beans/spring-beans.xsd 
+		http://www.springframework.org/schema/mvc 
+		http://www.springframework.org/schema/mvc/spring-mvc.xsd 
+		http://www.springframework.org/schema/context 
+		http://www.springframework.org/schema/context/spring-context.xsd 
+		http://www.springframework.org/schema/aop 
+		http://www.springframework.org/schema/aop/spring-aop.xsd 
+		http://www.springframework.org/schema/tx 
+		http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+	<context:component-scan
+		base-package="com.xm.service"></context:component-scan>
+	<context:property-placeholder
+		location="classpath:db.properties" />
+	<bean id="dataSource"
+		class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="${jdbc.driver}"></property>
+		<property name="url" value="${jdbc.url}"></property>
+		<property name="username" value="${jdbc.username}"></property>
+		<property name="password" value="${jdbc.password}"></property>
+		<!-- 初始化连接 -->
+		<property name="initialSize" value="10"></property>
+		<!-- 最大连接数量 -->
+		<property name="maxActive" value="50"></property>
+		<!-- 最大空闲连接 -->
+		<property name="maxIdle" value="20"></property>
+		<!-- 最小空闲连接 -->
+		<property name="minIdle" value="5"></property>
+		<!-- 是否在自动回收超时连接的时候打印连接的超时错误 -->
+		<property name="logAbandoned" value="true"></property>
+		<!-- 是否自动回收超时连接 -->
+		<property name="removeAbandoned" value="true"></property>
+		<!-- 超时等待时间以毫秒为单位 -->
+		<property name="maxWait" value="1000"></property>
+		<!-- 超时时间（以秒为单位） -->
+		<property name="removeAbandonedTimeout" value="180"></property>
+		<!-- 定时对线程池中的链接进行validateObject校验，对无效的链接进行关闭 -->
+		<property name="testWhileIdle" value="true"></property>
+		<!-- 指定在从连接池中拿连接时，要检查连接是否有效，若无效会将连接从连接池中移除掉 -->
+		<property name="testOnBorrow" value="true"/>
+	</bean>
+	<bean id="sqlSessionFactory"
+		class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource"></property>
+		<property name="configLocation"
+			value="classpath:mybatis/SqlMapConfig.xml"></property>
+		<!-- 传入pageHelper插件 -->
+		<property name="plugins">
+			<array>
+				<bean class="com.github.pagehelper.PageInterceptor">
+					<!--使用下面的方式配置参数，一行配置一个 -->
+					<property name="properties"> 
+						<value>
+							helperDialect=mysql
+							reasonable=true
+						</value>
+					</property>
+				</bean>
+			</array>
+		</property>
+	</bean>
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.xm.mapper"></property>
+		<property name="sqlSessionFactoryBeanName"
+			value="sqlSessionFactory"></property>
+	</bean>
+</beans>
